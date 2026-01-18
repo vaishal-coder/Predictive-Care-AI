@@ -1,54 +1,108 @@
-<<<<<<< HEAD
-# High-End Agentic AI for Preventive Care
+# Predictive-Care-AI
 
-A professional, multi-agent AI system designed to predict health risks and recommend personalized preventive care.
+Next‑generation multi‑agent intelligence for proactive health orchestration and personalized care.
 
-## 🌟 Key Features
-- **Multi-Agent Architecture**: Orchestrates specialized agents for Risk, Knowledge, and Recommendation.
-- **RAG-based Knowledge Retrieval**: Uses FAISS and Vector Embeddings to retrieve medical guidelines.
-- **Machine Learning Risk Prediction**: Uses Random Forest to predict health risks based on vitals.
-- **High-End UI**: Premium, glassmorphism-based React interface.
+## Overview
+- Backend: Python Flask API orchestrating four agents (Risk, RAG, Recommendation, Memory).
+- Frontend: React (Vite) interface collecting biometrics and visualizing agent outputs.
+- LLM providers: OpenAI, Groq, Gemini with automatic fallback; local SQLite memory, optional Supabase.
 
-## 🚀 Getting Started
+## Architecture
+- RiskPredictionAgent: RandomForest model predicts risk level from `age`, `bmi`, `bp`, `sugar`, `lifestyle` and adds a concise LLM interpretation.
+- MedicalKnowledgeAgent (RAG): Retrieves evidence‑based guidelines (SentenceTransformers + FAISS). Falls back to safe defaults if embeddings unavailable.
+- RecommendationAgent: Synthesizes a structured, personalized care plan from risk and guidelines.
+- MemoryAgent: Persists recent interactions to `backend/data/health_memory.db` (SQLite). Optional cloud sync via Supabase.
+- OrchestratorAgent: Coordinates all agents and returns a single structured response.
 
+## API
+Base URL: `http://localhost:5000`
+
+- `GET /api/health-check`
+  - Returns service status.
+
+- `POST /api/analyze`
+  - Body:
+    ```json
+    {
+      "user_data": { "age": 35, "bmi": 24.2, "bp": 120, "sugar": 95, "lifestyle": "Moderate" },
+      "history": []
+    }
+    ```
+  - Response (example):
+    ```json
+    {
+      "risk_analysis": { "risk_level": "Medium", "explanation": "..." },
+      "guidelines": ["..."],
+      "recommendation": "Markdown plan ..."
+    }
+    ```
+
+## Setup
 ### Prerequisites
-- Python 3.9+
-- Node.js 16+
+- Python 3.10+
+- Node.js 18+
 
-### 1. Backend Setup
-Navigate to the backend folder and install dependencies:
-```bash
-cd backend
-pip install -r requirements.txt
-```
-Run the Flask API:
-```bash
-python app.py
-```
-*Note: The first run will train the dummy ML model and download the RAG embeddings model.*
+### Backend
+1. Create env file at repo root:
+   ```
+   OPENAI_API_KEY=...
+   GROQ_API_KEY=...
+   GOOGLE_API_KEY=...
+   SUPABASE_URL=...
+   SUPABASE_KEY=...
+   ```
+2. Install and run:
+   ```powershell
+   cd d:\preventivecare\backend
+   python -m venv .venv
+   .\.venv\Scripts\Activate
+   pip install -r requirements.txt
+   python app.py
+   ```
+   - First run will train or load the risk model and initialize RAG.
 
-### 2. Frontend Setup
-Navigate to the frontend folder and install dependencies:
-```bash
-cd frontend
+### Frontend
+```powershell
+cd d:\preventivecare\frontend
 npm install
-```
-Run the dev server:
-```bash
 npm run dev
 ```
+- UI expects backend at `http://localhost:5000`. Adjust `App.jsx` if using a different host/port.
 
-### 3. Usage
-- Open `http://localhost:5173`
-- Enter health data or click "Sync Wearable" to simulate data.
-- Click "Analyze" to see the agents in action.
+## Training a Real Risk Model
+A starter dataset is included at `AI_in_HealthCare_Dataset.csv`.
+```powershell
+cd d:\preventivecare\backend
+python train_risk_model.py
+```
+Saves model to `backend/models/risk_model.pkl` and encoders to `backend/models/le.pkl`.
 
-## 🤖 Agents
-- **Orchestrator**: Manages the flow.
-- **Risk Agent**: Predicts Low/Medium/High risk.
-- **Medical Knowledge Agent**: Retrieves guidelines.
-- **Recommendation Agent**: Formats the final plan.
-=======
-# Predictive-Care-AI
-Next-generation multi-agent intelligence for proactive health orchestration and personalized care.
->>>>>>> 35fb384e04fb75570384aef55ae0cb5b909180a9
+## Environment Variables
+- `OPENAI_API_KEY`, `GROQ_API_KEY`, `GOOGLE_API_KEY`: any subset works; provider fallback is automatic.
+- `SUPABASE_URL`, `SUPABASE_KEY`: optional; enable cloud memory.
+- `PORT`: optional; defaults to `5000`.
+
+## Data & Storage
+- Local memory DB: `backend/data/health_memory.db` (auto‑created).
+- Models: `backend/models/` (`risk_model.pkl`, `le.pkl`).
+
+## Security
+- `.env` is ignored via `.gitignore`. Never commit secrets.
+- Use GitHub Repository Secrets for CI/CD and deployments.
+
+## Troubleshooting
+- "System Error: No valid LLM API keys": add at least one provider key to `.env`.
+- RAG disabled: if SentenceTransformers or FAISS cannot initialize, default guidelines are used.
+- CORS/connection issues: ensure backend on `5000` and frontend dev server is running.
+
+## Project Structure
+```
+preventivecare/
+├── backend/      # Flask API + agents, models, utils
+├── frontend/     # React (Vite) UI
+├── AI_in_HealthCare_Dataset.csv
+└── README.md
+```
+
+## License
+For educational and prototyping purposes. Replace or add license as needed.
